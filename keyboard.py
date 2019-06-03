@@ -163,7 +163,6 @@ class Input(ctypes.Structure):
                 ("ii", Input_I)]
 
 # Actual Functions
-
 def move_mouse(x,y):
     ctypes.windll.user32.SetCursorPos(x, y)
 
@@ -182,9 +181,9 @@ def ReleaseKey(hexKeyCode):
     ctypes.windll.user32.SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
 
 def press_key_time(key, t):
-    print ('Pressing {} for {}s'.format(key, time))
+    print ('Pressing {} for {}s'.format(key, t))
     try:
-        key = key.toUpper()
+        key = key.upper()
         PressKey(keys[key])
         time.sleep(t)
         ReleaseKey(keys[key])
