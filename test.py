@@ -8,10 +8,10 @@ from key_reference import vk_keys, keys
 
 M = mousefunc.Mouse()
 
-width, height = GetSystemMetrics(0), GetSystemMetrics(1)
-button_down, button_up = 1, 0
+WIDTH, HEIGHT = GetSystemMetrics(0), GetSystemMetrics(1)
+BUTTON_DOWN, BUTTON_UP = 1, 0
 move = 0
-sensitivity = 0.0315
+x_sensitivity = 0.0315
 #ref_states = {key: win32api.GetKeyState(vk_keys[key]) for key in list(vk_keys.keys())}
 
 
@@ -26,13 +26,12 @@ def record(ST=0.01):
     # state_right = win32api.GetKeyState(rightMouse)  # Right button down = 0 or 1. Button up = -127 or -128
 
     record_button = win32api.GetKeyState(vk_keys['VK_KEY_1']) # 1
-    
     prev_states = {key: win32api.GetKeyState(vk_keys[key]) for key in list(vk_keys.keys())}
-    currentTime=time.time()
-    xedge, yedge = 0,0
+    current_time = time.time()
+    x_edge, y_edge = 0,0
+    prev_x, prev_y = win32api.GetCursorPos()
     switch = False
 
-    prvX, prvY = win32api.GetCursorPos()
     while True:
         # a = win32api.GetKeyState(vk_keys['VK_LBUTTON'])
         # b = win32api.GetKeyState(vk_keys['VK_RBUTTON'])
@@ -43,52 +42,52 @@ def record(ST=0.01):
             f.close()
             return
         
-        if time.time() - currentTime > ST:
-            h_x, h_y = win32api.GetCursorPos()
+        if time.time() - current_time > ST:
+            current_x, current_y = win32api.GetCursorPos()
             current_states = {key: win32api.GetKeyState(vk_keys[key]) for key in vk_keys}
 
             # move mouse back to center if it gets to the edge
-            if h_x <= 0 or h_x >= width-1:
+            if current_x <= 0 or current_x >= WIDTH-1:
                 switch = not switch
-                M.move_mouse((width//2, h_y))
-            if h_y >= height-1 or h_y <= 0:
+                M.move_mouse((WIDTH//2, current_y))
+            if current_y >= HEIGHT-1 or current_y <= 0:
                 switch = not switch
-                M.move_mouse((h_x, height//2))
+                M.move_mouse((current_x, HEIGHT//2))
 
-            dX, dY = sensitivity*(h_x + (switch * xedge) - prvX), sensitivity*(h_y + (switch * yedge)- prvY)
-            prvX, prvY = h_x, h_y
+            delta_x, delta_y = x_sensitivity * (current_x + (switch * x_edge) - prev_x), x_sensitivity * (current_y + (switch * y_edge) - prev_y)
+            prev_x, prev_y = current_x, current_y
 
             # remove offset caused by moving mouse back to center 
-            if dX >= sensitivity*width//2.5: dX -= sensitivity*width//2
-            if dY >= sensitivity*height//2.5: dY -= sensitivity*height//2
-            if dX <= sensitivity*-width//2.5: dX += sensitivity*width//2
-            if dY <= sensitivity*-height//2.5: dY += sensitivity*height//2
+            if delta_x >= x_sensitivity * WIDTH // 2.5: delta_x -= x_sensitivity * WIDTH // 2
+            if delta_y >= x_sensitivity * HEIGHT // 2.5: delta_y -= x_sensitivity * HEIGHT // 2
+            if delta_x <= x_sensitivity * -WIDTH // 2.5: delta_x += x_sensitivity * WIDTH // 2
+            if delta_y <= x_sensitivity * -HEIGHT // 2.5: delta_y += x_sensitivity * HEIGHT // 2
 
-            f.write("%.3f " % (time.time() - currentTime))
-            f.write(' 0'  + ' ' + str(move) + ' ' + str(dX) + ' ' + str(dY) + '\n') 
-            currentTime = time.time()    
+            f.write("%.3f " % (time.time() - current_time))
+            f.write(' 0'  + ' ' + str(0) + ' ' + str(delta_x) + ' ' + str(delta_y) + '\n') 
+            current_time = time.time()    
 
             if prev_states != current_states: # Button state changed
                 for key in current_states:
                     if current_states[key] != prev_states[key]:
                         print("record: {} toggled".format(key))
-                        f.write("%.3f " % (time.time()-currentTime))
-                        button_action = 0
-                        if current_states[key] < 0: button_action = 1
-                        f.write(' ' + str(vk_keys[key]) + ' ' + str(button_action) + ' ' + str(dX) + ' ' + str(dY) + '\n') 
+                        f.write("%.3f " % (time.time()-current_time))
+                        button_action = BUTTON_UP
+                        if current_states[key] < 0: button_action = BUTTON_DOWN
+                        f.write(' ' + str(vk_keys[key]) + ' ' + str(button_action) + ' ' + str(delta_x) + ' ' + str(delta_y) + '\n') 
                         
                 # if a != state_left:  
                 #     print('- record: Left toggled')
                 #     state_left = a
-                #     mouseStateA = str(button_up)
-                #     if a < 0: mouseStateA = str(button_down)
-                #     f.write(' ' + str(leftMouse) + ' ' + str(mouseStateA) + ' ' + str(dX) + ' ' + str(dY) + '\n') 
+                #     mouseStateA = str(BUTTON_UP)
+                #     if a < 0: mouseStateA = str(BUTTON_DOWN)
+                #     f.write(' ' + str(leftMouse) + ' ' + str(mouseStateA) + ' ' + str(delta_x) + ' ' + str(delta_y) + '\n') 
                 # if b != state_right: 
                 #     print('- record: Right toggled')
                 #     state_right = b
-                #     mouseStateB = str(button_up)
-                #     if b < 0: mouseStateB = str(button_down)
-                #     f.write(' ' + str(rightMouse) + ' ' + str(mouseStateB) + ' ' + str(dX) + ' ' + str(dY) + '\n')
+                #     mouseStateB = str(BUTTON_UP)
+                #     if b < 0: mouseStateB = str(BUTTON_DOWN)
+                #     f.write(' ' + str(rightMouse) + ' ' + str(mouseStateB) + ' ' + str(delta_x) + ' ' + str(delta_y) + '\n')
 
             prev_states = current_states
             
@@ -115,24 +114,24 @@ def play(loopTime = 1, sleepTime = 0.1):
             M.move_relative((movX, movY))
 
             if int(currentEvent[1]) == 1:
-                if int(currentEvent[2]) == button_down:
+                if int(currentEvent[2]) == BUTTON_DOWN:
                     #win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,
                     #0,0,0,0)
                     keyboard.press_key('N')
                     #M.click(button_name='left')
-                if int(currentEvent[2]) == button_up:
+                if int(currentEvent[2]) == BUTTON_UP:
                     #win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,
                     #0,0,0,0)
                     keyboard.release_key('N')
             elif int(currentEvent[1]) == 2:
-                if int(currentEvent[2]) == button_down:
+                if int(currentEvent[2]) == BUTTON_DOWN:
                     #win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,
                     #0,0,0,0)
                     #keyboard.PressKey(0x101)
                     #keyboard.PressKey(rightMouse)
                     keyboard.press_key('M')
                     #M.click(button_name='right')
-                if int(currentEvent[2]) == button_up:
+                if int(currentEvent[2]) == BUTTON_UP:
                     #win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,
                     #0,0,0,0)    
                     keyboard.release_key('M')
@@ -143,6 +142,7 @@ def _main():
     while True:
         toggled = False
         isPlay = False
+
         while win32api.GetKeyState(0x31) not in [0,1]:
             toggled = True
             time.sleep(0.01)
