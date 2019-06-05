@@ -52,7 +52,7 @@ class Mouse:
         xp, yp = x,y
         if xp == 0.0: xp = '-'
         if yp == 0.0: yp = '-'
-        print("x={},y={}".format(xp,yp))
+        #print("x={},y={}".format(xp,yp))
         self._do_event(self.MOUSEEVENTF_MOVE, x, y, 0, 0)
 
     def press_button(self, pos=(-1, -1), button_name="left", button_up=False):
