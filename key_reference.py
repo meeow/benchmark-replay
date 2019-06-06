@@ -1,22 +1,22 @@
 vk_keys = {
-    'VK_RBUTTON':0x02,
-    'VK_LBUTTON':0x01,
+    'VK_M1':0x01,
+    'VK_M2':0x02,
     'VK_SPACE':0x20,
-    'VK_KEY_1':0x31,
-    'VK_KEY_2':0x32,
-    'VK_KEY_3':0x33,
-    'VK_KEY_4':0x34,
-    'VK_KEY_A':0x41,
-    'VK_KEY_D':0x44,
-    'VK_KEY_S':0x53,
-    'VK_KEY_Q':0x51,
-    'VK_KEY_R':0x52,
-    'VK_KEY_C':0x43,
+    'VK_1':0x31,
+    'VK_2':0x32,
+    'VK_3':0x33,
+    'VK_4':0x34,
+    'VK_A':0x41,
+    'VK_D':0x44,
+    'VK_S':0x53,
+    'VK_Q':0x51,
+    'VK_R':0x52,
+    'VK_C':0x43,
     'VK_LSHIFT':0xA0,
-    'VK_KEY_E':0x45,
-    'VK_KEY_F':0x46,
-    'VK_KEY_W':0x57,
-    'VK_KEY_V':0x56,
+    'VK_E':0x45,
+    'VK_F':0x46,
+    'VK_W':0x57,
+    'VK_V':0x56,
     # 'VK_MBUTTON':0x04,
     # 'VK_XBUTTON1':0x05,
     # 'VK_XBUTTON2':0x06,
@@ -198,6 +198,8 @@ vk_keys = {
     # 'VK_XBUTTON2':0x06,
 }
 
+vk_codes = dict((v,k) for k, v in vk_keys.items())
+
 keys = {
     'ESCAPE':0x01,
     '1':0x02,
@@ -325,3 +327,5 @@ keys = {
     'M3':0x103,
     'M4':0x104,
 }
+
+codes = dict((v,k) for k, v in keys.items())
