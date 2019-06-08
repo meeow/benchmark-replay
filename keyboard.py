@@ -6,24 +6,11 @@
 
 import ctypes
 import time
-import logging
 import os
 from key_reference import keys
+from logger import logger
 
 SendInput = ctypes.windll.user32.SendInput
-
-# define a Handler which writes INFO messages or higher to the sys.stderr
-console = logging.StreamHandler()
-console.setLevel(logging.DEBUG)
-# set a format which is simpler for console use
-formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
-# tell the handler to use this format
-console.setFormatter(formatter)
-# add the handler to the root logger
-logging.getLogger('').addHandler(console)
-logger = logging.getLogger('')
-logging.root.setLevel(logging.DEBUG)
-
 
 # C struct redefinitions 
 PUL = ctypes.POINTER(ctypes.c_ulong)
@@ -70,7 +57,7 @@ def press_key(key):
     
     hex_code = keys[key.upper()]
     press_key_helper(hex_code)
-    logger.debug('Pressed {}'.format(key))
+    logger.debug('[ Replay ] Pressed {}'.format(key))
 
 def release_key(key):
     def release_key_helper(hexKeyCode):
@@ -82,7 +69,7 @@ def release_key(key):
     
     hex_code = keys[key.upper()]
     release_key_helper(hex_code)
-    logger.debug('Released {}'.format(key))
+    logger.debug('[ Replay ]Released {}'.format(key))
 
 
 def press_key_time(key, t):
