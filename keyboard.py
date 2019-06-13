@@ -47,6 +47,14 @@ class Input(ctypes.Structure):
 def move_mouse(x,y):
     ctypes.windll.user32.SetCursorPos(x, y)
 
+def move_mouse_to(x, y):
+    extra = ctypes.c_ulong(0)
+    ii_ = Input_I()
+    ii_.mi = MouseInput(x, y, 0, 0x0001, 0, ctypes.pointer(extra))
+
+    command = Input(ctypes.c_ulong(0), ii_)
+    ctypes.windll.user32.SendInput(1, ctypes.pointer(command), ctypes.sizeof(command))
+
 def press_key(key):
     def press_key_helper(hexKeyCode):
         extra = ctypes.c_ulong(0)

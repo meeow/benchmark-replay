@@ -50,9 +50,6 @@ class Mouse:
         (x, y) = pos
         old_pos = self.get_position()
         xp, yp = x,y
-        if xp == 0.0: xp = '-'
-        if yp == 0.0: yp = '-'
-        #print("x={},y={}".format(xp,yp))
         self._do_event(self.MOUSEEVENTF_MOVE, x, y, 0, 0)
 
     def press_button(self, pos=(-1, -1), button_name="left", button_up=False):
@@ -61,14 +58,9 @@ class Mouse:
         self._do_event(self.get_button_value(button_name, button_up), 0, 0, 0, 0)
 
     def click(self, pos=(-1, -1), button_name= "left"):
-        """Click at the specified placed"""
+        """Click at the specified place"""
         self.move_mouse(pos)
         self._do_event(self._get_button_value(button_name, False)+self._get_button_value(button_name, True), 0, 0, 0, 0)
-
-    def double_click (self, pos=(-1, -1), button_name="left"):
-        """Double click at the specifed placed"""
-        for i in xrange(2): 
-            self.click(pos, button_name)
 
     def get_position(self):
         """get mouse position"""

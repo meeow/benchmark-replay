@@ -11,13 +11,13 @@ M = mousefuncs.Mouse()
 WIDTH, HEIGHT = win32api.GetSystemMetrics(0), win32api.GetSystemMetrics(1)
 BUTTON_DOWN, BUTTON_UP = 1, 0
 RECORD_BTN, PLAY_BTN = vk_keys['VK_1'], vk_keys['VK_2']
-X_SENS = 0.03
-Y_SENS = X_SENS / 2
+# X_SENS = 0.03
+# Y_SENS = X_SENS / 2
+X_SENS = 1
+Y_SENS = 1
 
-def record(ST=0.01):
-    f = open('record.txt','w')
-    f.close()
-    f = open('record.txt','a')
+def record(ST=0.005):
+    buffer = []
 
     record_button = win32api.GetKeyState(RECORD_BTN) 
     prev_states = {key: win32api.GetKeyState(vk_keys[key]) for key in list(vk_keys.keys())}
@@ -29,7 +29,12 @@ def record(ST=0.01):
         recording = win32api.GetKeyState(RECORD_BTN)
 
         if recording != record_button:
-            time.sleep(0.4)
+            logger.debug('Saving buffers...')
+            f = open('record.txt', 'w')
+            for item in buffer:
+                f.write(item)
+            time.sleep(0.5)
+            logger.debug('Buffer save complete.')
             f.close()
             return
         
@@ -50,22 +55,30 @@ def record(ST=0.01):
             prev_x, prev_y = current_x, current_y
 
             # remove offset caused by moving mouse back to center 
-            if delta_x >= X_SENS * WIDTH // 2.5: delta_x -= X_SENS * WIDTH // 2
-            if delta_y >= Y_SENS * HEIGHT // 2.5: delta_y -= Y_SENS * HEIGHT // 2
-            if delta_x <= X_SENS * -WIDTH // 2.5: delta_x += X_SENS * WIDTH // 2
-            if delta_y <= Y_SENS * -HEIGHT // 2.5: delta_y += Y_SENS * HEIGHT // 2
+            if delta_x >= X_SENS * WIDTH // 3: 
+                delta_x -= X_SENS * WIDTH // 2
+                logger.debug('Triggered')
+            if delta_y >= Y_SENS * HEIGHT // 3: 
+                delta_y -= Y_SENS * HEIGHT // 2
+                logger.debug('Triggered')
+            if delta_x <= X_SENS * -WIDTH // 3: 
+                delta_x += X_SENS * WIDTH // 2
+                logger.debug('Triggered')
+            if delta_y <= Y_SENS * -HEIGHT // 3: 
+                delta_y += Y_SENS * HEIGHT // 2
+                logger.debug('Triggered')
 
-            f.write("%.3f " % (time.time() - current_time))
-            f.write(' 0'  + ' ' + str(0) + ' ' + str(delta_x) + ' ' + str(delta_y) + '\n') 
+            buffer += ['{} 0 0 {} {} \n'.format(time.time() - current_time, delta_x, delta_y)]
+
             current_time = time.time()    
 
             if prev_states != current_states: # Button state changed
                 for key in current_states:
                     if current_states[key] != prev_states[key]:
-                        f.write("%.3f " % (time.time()-current_time))
                         button_action = BUTTON_UP
-                        if current_states[key] < 0: button_action = BUTTON_DOWN
-                        f.write(' ' + str(vk_keys[key]) + ' ' + str(button_action) + ' ' + str(delta_x) + ' ' + str(delta_y) + '\n') 
+                        if current_states[key] < 0: 
+                            button_action = BUTTON_DOWN
+                        buffer += ['0 {} {} 0 0 \n'.format(str(vk_keys[key]), str(button_action))]
                         logger.debug("[ Record ] {} [{}] toggled {}".format(key, vk_keys[key], button_action))
 
             prev_states = current_states
@@ -74,22 +87,24 @@ def record(ST=0.01):
         
 def play(loopTime = 1, sleepTime = 0.1):
     f = open('record.txt','r')
-    line = f.readlines()
+    lines = f.readlines()
     play_button = win32api.GetKeyState(PLAY_BTN)
 
     while loopTime:
-        loopTime = loopTime - 1
-        for s in line:
-            currentEvent = s.split()
+        loopTime -= 1
+
+        for line in lines:
+            currentEvent = line.split()
             playing = win32api.GetKeyState(PLAY_BTN)
             if playing != play_button:
-                time.sleep(0.4)
+                time.sleep(0.5)
                 f.close()
                 return
                 
             time.sleep(float(currentEvent[0]))
-            movX, movY = float(currentEvent[3]), float(currentEvent[4])
-            M.move_relative((movX, movY))
+            movX, movY = int(currentEvent[3]), int(currentEvent[4])
+            #M.move_relative((movX, movY))
+            keyboard.move_mouse_to(movX, movY)
 
             if int(currentEvent[1]): # key pressed/released
                 vk_key = vk_codes[int(currentEvent[1])]
@@ -107,6 +122,7 @@ def play(loopTime = 1, sleepTime = 0.1):
         time.sleep(sleepTime)
 
 def _main():
+    print ("Press [1] to start/stop recording and [2] to replay")
     while True:
         toggled = False
         isPlay = False
